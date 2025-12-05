@@ -107,7 +107,7 @@ export default function HomePage() {
                 Home
               </Link>
               <a
-                href="#features"
+                href="/propertise"
                 className={`font-medium transition-colors ${
                   isScrolled
                     ? "text-gray-700 hover:text-gray-900"
