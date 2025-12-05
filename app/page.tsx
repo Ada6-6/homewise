@@ -114,28 +114,38 @@ export default function HomePage() {
                     : "text-white hover:text-gray-200"
                 }`}
               >
-                Features
+                Properties
               </a>
-              <a
-                href="#how-it-works"
+              <Link
+                href="/learn"
                 className={`font-medium transition-colors ${
                   isScrolled
                     ? "text-gray-700 hover:text-gray-900"
                     : "text-white hover:text-gray-200"
                 }`}
               >
-                How It Works
-              </a>
-              <a
-                href="#ecosystem"
+                Learn
+              </Link>
+              <Link
+                href="/news"
                 className={`font-medium transition-colors ${
                   isScrolled
                     ? "text-gray-700 hover:text-gray-900"
                     : "text-white hover:text-gray-200"
                 }`}
               >
-                Ecosystem
-              </a>
+                News
+              </Link>
+              <Link
+                href="/community"
+                className={`font-medium transition-colors ${
+                  isScrolled
+                    ? "text-gray-700 hover:text-gray-900"
+                    : "text-white hover:text-gray-200"
+                }`}
+              >
+                Community
+              </Link>
               <Link
                 href="/agents"
                 className={`font-medium transition-colors ${
@@ -147,16 +157,27 @@ export default function HomePage() {
                 Agents
               </Link>
             </div>
-            <div className="flex items-center">
-              <button
+            <div className="flex items-center space-x-3">
+              <Link
+                href="/login"
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  isScrolled
+                    ? "text-gray-700 hover:text-gray-900"
+                    : "text-white hover:text-gray-200"
+                }`}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isScrolled
                     ? "bg-green text-white hover:bg-green-dark"
                     : "bg-green text-white hover:bg-green-dark"
                 }`}
               >
-                Get Started
-              </button>
+                Sign Up
+              </Link>
             </div>
           </div>
         </nav>
@@ -194,14 +215,19 @@ export default function HomePage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 animate-slide-up-delay-2">
-            <button className="px-6 py-3 bg-green text-white rounded-lg font-medium hover:bg-green-dark transition-colors flex items-center">
-              Start Your Journey
+            <Link
+              href="/register"
+              className="px-6 py-3 bg-green text-white rounded-lg font-medium hover:bg-green-dark transition-colors flex items-center"
+            >
+              Sign Up to Start Your Journey
               <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
-            <button className="px-6 py-3 border-2 border-white/30 text-white rounded-lg font-medium hover:bg-white/10 transition-colors flex items-center">
-              <Play className="mr-2 h-5 w-5" />
-              Watch Demo
-            </button>
+            </Link>
+            <Link
+              href="/login"
+              className="px-6 py-3 border-2 border-white/30 text-white rounded-lg font-medium hover:bg-white/10 transition-colors flex items-center"
+            >
+              Sign In
+            </Link>
           </div>
 
           {/* Feature List */}
@@ -583,13 +609,19 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            <button className="px-8 py-4 bg-white text-green rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center">
-              Get Started Free
+            <Link
+              href="/register"
+              className="px-8 py-4 bg-white text-green rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center"
+            >
+              Sign Up
               <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
-            <button className="px-8 py-4 border-2 border-white/30 text-white rounded-lg font-medium hover:bg-white/10 transition-colors">
-              Contact Sales
-            </button>
+            </Link>
+            <Link
+              href="/login"
+              className="px-8 py-4 border-2 border-white/30 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
+            >
+              Sign In
+            </Link>
           </div>
 
           <p className="text-white/80 text-sm">

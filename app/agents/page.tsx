@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import MetricCard from "@/components/MetricCard";
 import ClientCard from "@/components/ClientCard";
-import { Users, Search, FileText, TrendingUp, Plus } from "lucide-react";
+import { Users, Search, FileText, TrendingUp, Plus, Home } from "lucide-react";
 import Link from "next/link";
 import { mockClients, mockDashboardMetrics } from "@/lib/mockData";
 
@@ -14,6 +14,15 @@ export default function Dashboard() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Link
+                href="/"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Home className="h-4 w-4 mr-1" />
+                Back to Home
+              </Link>
+            </div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="mt-2 text-sm text-gray-600">
               Welcome back! Here&apos;s an overview of your work today.
