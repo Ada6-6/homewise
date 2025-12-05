@@ -16,10 +16,10 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/agents", icon: LayoutDashboard },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Properties", href: "/properties", icon: Home },
-  { name: "Recommendations", href: "/recommendations", icon: FileText },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Clients", href: "/agents/clients", icon: Users },
+  { name: "Properties", href: "/agents/properties", icon: Home },
+  { name: "Recommendations", href: "/agents/recommendations", icon: FileText },
+  { name: "Analytics", href: "/agents/analytics", icon: BarChart3 },
 ] as const;
 
 export default function Sidebar() {
@@ -60,7 +60,7 @@ export default function Sidebar() {
         `}
       >
         <div className="flex h-16 items-center px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-primary-600">Homewise</h1>
+          <h1 className="text-xl font-bold text-primary-600">Homiehome</h1>
           <span className="ml-2 text-xs text-gray-500">Beta v0.1</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">

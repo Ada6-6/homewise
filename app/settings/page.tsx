@@ -16,9 +16,9 @@ import {
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
     name: "John Agent",
-    email: "john.agent@homewise.com",
+    email: "john.agent@Homiehome.com",
     phone: "+1 (555) 123-4567",
-    company: "Homewise Realty",
+    company: "Homiehome Realty",
     licenseNumber: "CA-123456",
     emailNotifications: true,
     smsNotifications: false,

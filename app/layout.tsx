@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Homewise - AI Real Estate Agent",
+  title: "Homiehome - AI Real Estate Agent",
   description: "Modern real estate agent management platform",
 };
 

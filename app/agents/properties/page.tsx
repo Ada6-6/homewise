@@ -94,7 +94,7 @@ export default function PropertiesPage() {
             </p>
           </div>
           <Link
-            href="/properties/new"
+            href="/agents/properties/new"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -247,7 +247,7 @@ export default function PropertiesPage() {
               {filteredProperties.map((property) => (
                 <Link
                   key={property.id}
-                  href={`/properties/${property.id}`}
+                  href={`/agents/properties/${property.id}`}
                   className="block"
                 >
                   <PropertyCard
@@ -274,6 +274,13 @@ export default function PropertiesPage() {
     </Layout>
   );
 }
+
+
+
+
+
+
+
 
 
 

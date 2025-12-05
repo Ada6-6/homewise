@@ -1,4 +1,4 @@
-# Deployment Guide for Homewise
+# Deployment Guide for Homiehome
 
 ## Deploy to Vercel
 
@@ -59,6 +59,13 @@ If you encounter build errors:
 1. Check Node.js version (should be 18+)
 2. Ensure all dependencies are in `package.json`
 3. Check build logs in Vercel dashboard
+
+
+
+
+
+
+
 
 
 

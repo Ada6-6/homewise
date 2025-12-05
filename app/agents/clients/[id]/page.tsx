@@ -88,7 +88,7 @@ export default function ClientDetailPage({
     <Layout>
       <div className="space-y-6">
         <Link
-          href="/clients"
+          href="/agents/clients"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

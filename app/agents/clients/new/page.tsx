@@ -32,7 +32,7 @@ export default function NewClientPage() {
     <Layout>
       <div className="max-w-3xl mx-auto space-y-6">
         <Link
-          href="/clients"
+          href="/agents/clients"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -202,7 +202,7 @@ export default function NewClientPage() {
 
             <div className="flex justify-end space-x-4">
               <Link
-                href="/clients"
+                href="/agents/clients"
                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
                 Cancel
@@ -220,6 +220,13 @@ export default function NewClientPage() {
     </Layout>
   );
 }
+
+
+
+
+
+
+
 
 
 

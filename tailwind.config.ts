@@ -21,6 +21,12 @@ const config: Config = {
           800: "#1e40af",
           900: "#1e3a8a",
         },
+        green: {
+          light: "#a8d5ba", // Light green for icons and highlights
+          DEFAULT: "#3CB371", // Standard green (teal/green from design)
+          dark: "#2d8654", // Dark green for backgrounds and headlines
+          mint: "#f0f9f4", // Mint green for section backgrounds
+        },
       },
     },
   },

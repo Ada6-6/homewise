@@ -1,6 +1,6 @@
-# Homewise - AI Real Estate Agent Platform
+# Homiehome - AI Real Estate Agent Platform
 
-A modern, full-featured real estate agent management platform built with Next.js, TypeScript, and Tailwind CSS. Homewise helps real estate agents efficiently manage clients, properties, and generate AI-powered property recommendations.
+A modern, full-featured real estate agent management platform built with Next.js, TypeScript, and Tailwind CSS. Homiehome helps real estate agents efficiently manage clients, properties, and generate AI-powered property recommendations.
 
 ## 🚀 Features
 
@@ -47,7 +47,7 @@ A modern, full-featured real estate agent management platform built with Next.js
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd homewise_agent
+   cd Homiehome_agent
    ```
 
 2. **Install dependencies**
@@ -66,7 +66,7 @@ A modern, full-featured real estate agent management platform built with Next.js
 ## 🏗️ Project Structure
 
 ```
-homewise_agent/
+Homiehome_agent/
 ├── app/                    # Next.js App Router pages
 │   ├── page.tsx           # Dashboard
 │   ├── clients/           # Client management

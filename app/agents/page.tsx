@@ -20,7 +20,7 @@ export default function Dashboard() {
             </p>
           </div>
           <Link
-            href="/clients/new"
+            href="/agents/clients/new"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -62,7 +62,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Recent Clients</h2>
             <Link
-              href="/clients"
+              href="/agents/clients"
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               View all
@@ -88,7 +88,7 @@ export default function Dashboard() {
             </h3>
             <div className="space-y-3">
               <Link
-                href="/clients/new"
+                href="/agents/clients/new"
                 className="block w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="font-medium text-gray-900">Add New Client</div>
@@ -97,7 +97,7 @@ export default function Dashboard() {
                 </div>
               </Link>
               <Link
-                href="/recommendations"
+                href="/agents/recommendations"
                 className="block w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="font-medium text-gray-900">Generate Report</div>
@@ -147,4 +147,3 @@ export default function Dashboard() {
     </Layout>
   );
 }
-

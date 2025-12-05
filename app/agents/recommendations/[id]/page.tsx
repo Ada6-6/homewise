@@ -209,7 +209,7 @@ Your Real Estate Agent
     <Layout>
       <div className="space-y-6">
         <Link
-          href="/recommendations"
+          href="/agents/recommendations"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -232,7 +232,7 @@ Your Real Estate Agent
                   Client:{" "}
                   {client ? (
                     <Link
-                      href={`/clients/${client.id}`}
+                      href={`/agents/clients/${client.id}`}
                       className="text-primary-600 hover:text-primary-700"
                     >
                       {client.name}
@@ -378,7 +378,7 @@ Your Real Estate Agent
               {currentProperties.map((property) => (
                 <div key={property.id} className="relative">
                   <Link
-                    href={`/properties/${property.id}`}
+                    href={`/agents/properties/${property.id}`}
                     className="block"
                   >
                     <PropertyCard

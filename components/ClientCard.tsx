@@ -23,7 +23,7 @@ export default function ClientCard({ client }: ClientCardProps) {
 
   return (
     <Link
-      href={`/clients/${client.id}`}
+      href={`/agents/clients/${client.id}`}
       className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-center space-x-4">
@@ -55,6 +55,13 @@ export default function ClientCard({ client }: ClientCardProps) {
     </Link>
   );
 }
+
+
+
+
+
+
+
 
 
 

@@ -49,7 +49,7 @@ export default function RecommendationsPage() {
 
                 <div className="flex items-center gap-2 mb-4">
                   <Link
-                    href={`/recommendations/${recommendation.id}`}
+                    href={`/agents/recommendations/${recommendation.id}`}
                     className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                   >
                     View & Edit Report →
@@ -77,7 +77,7 @@ export default function RecommendationsPage() {
                   {recommendation.properties.map((property) => (
                     <Link
                       key={property.id}
-                      href={`/properties/${property.id}`}
+                      href={`/agents/properties/${property.id}`}
                       className="block"
                     >
                       <PropertyCard
@@ -116,7 +116,7 @@ export default function RecommendationsPage() {
                 started.
               </p>
               <Link
-                href="/clients"
+                href="/agents/clients"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
               >
                 View Clients
