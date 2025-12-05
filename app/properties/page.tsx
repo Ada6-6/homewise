@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
   Home as HomeIcon,
@@ -13,9 +13,19 @@ import {
   Bath,
   Square,
   DollarSign,
+  ZoomIn,
+  ZoomOut,
+  AlertCircle,
 } from "lucide-react";
 import { mockProperties } from "@/lib/mockData";
 import { Property } from "@/types";
+
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
 
 export default function PropertiesPage() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,7 +35,20 @@ export default function PropertiesPage() {
   const [bedrooms, setBedrooms] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 37.4419, lng: -122.1430 }); // Default to Palo Alto area
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [useEmbedMap, setUseEmbedMap] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+
+  // Default center (Austin, TX area)
+  const defaultCenter = { lat: 30.2672, lng: -97.7431 };
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapZoom, setMapZoom] = useState(12);
+
+  // Get API key from environment variable
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +58,135 @@ export default function PropertiesPage() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Load Google Maps API
+  useEffect(() => {
+    // If no API key, use embed map instead
+    if (!apiKey || apiKey === "YOUR_API_KEY") {
+      setUseEmbedMap(true);
+      setMapLoaded(true);
+      return;
+    }
+
+    if (!window.google && !document.querySelector('script[src*="maps.googleapis.com"]')) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Set up callback
+      window.initMap = initializeMap;
+      
+      // Handle script load errors
+      script.onerror = () => {
+        setMapError("Failed to load Google Maps. Using alternative map view.");
+        setUseEmbedMap(true);
+        setMapLoaded(true);
+      };
+      
+      document.head.appendChild(script);
+    } else if (window.google && mapRef.current && !mapInstanceRef.current) {
+      initializeMap();
+    }
+
+    return () => {
+      if (markersRef.current.length > 0) {
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
+      }
+    };
+  }, [apiKey]);
+
+  const initializeMap = () => {
+    if (!mapRef.current || !window.google) {
+      setMapError("Google Maps API not available. Using alternative map view.");
+      setUseEmbedMap(true);
+      setMapLoaded(true);
+      return;
+    }
+
+    try {
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: mapCenter,
+        zoom: mapZoom,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+      });
+
+      mapInstanceRef.current = map;
+
+      // Add map event listeners
+      map.addListener("center_changed", () => {
+        const center = map.getCenter();
+        if (center) {
+          setMapCenter({ lat: center.lat(), lng: center.lng() });
+        }
+      });
+
+      map.addListener("zoom_changed", () => {
+        setMapZoom(map.getZoom());
+      });
+
+      setMapLoaded(true);
+      setMapError(null);
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      setMapError("Error loading map. Using alternative view.");
+      setUseEmbedMap(true);
+      setMapLoaded(true);
+    }
+  };
+
+  // Update markers when filtered properties change
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.google || useEmbedMap) return;
+
+    // Clear existing markers
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    // Add markers for filtered properties
+    filteredProperties.forEach((property) => {
+      // Generate approximate coordinates (in real app, use geocoding)
+      const lat = defaultCenter.lat + (Math.random() - 0.5) * 0.2;
+      const lng = defaultCenter.lng + (Math.random() - 0.5) * 0.2;
+
+      try {
+        const marker = new window.google.maps.Marker({
+          position: { lat, lng },
+          map: mapInstanceRef.current,
+          title: property.address,
+          icon: {
+            url: selectedProperty?.id === property.id
+              ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+              : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          },
+        });
+
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `
+            <div style="padding: 8px; min-width: 200px;">
+              <h3 style="margin: 0 0 8px 0; font-weight: bold; font-size: 14px;">${property.address}</h3>
+              <p style="margin: 0 0 4px 0; color: #059669; font-weight: bold; font-size: 16px;">$${(property.price / 1000).toFixed(0)}K</p>
+              <p style="margin: 0; font-size: 12px; color: #666;">${property.bedrooms} bed • ${property.bathrooms} bath • ${property.squareFeet?.toLocaleString()} sqft</p>
+            </div>
+          `,
+        });
+
+        marker.addListener("click", () => {
+          setSelectedProperty(property);
+          mapInstanceRef.current.setCenter({ lat, lng });
+          mapInstanceRef.current.setZoom(15);
+          infoWindow.open(mapInstanceRef.current, marker);
+        });
+
+        markersRef.current.push(marker);
+      } catch (error) {
+        console.error("Error adding marker:", error);
+      }
+    });
+  }, [filteredProperties, selectedProperty, useEmbedMap]);
 
   const filteredProperties = useMemo(() => {
     let filtered = [...mockProperties];
@@ -75,9 +227,44 @@ export default function PropertiesPage() {
 
   const handlePropertyClick = (property: Property) => {
     setSelectedProperty(property);
-    // Update map center to property location
-    // In a real app, you would geocode the address
-    setMapCenter({ lat: 37.4419 + Math.random() * 0.1, lng: -122.1430 + Math.random() * 0.1 });
+    // In a real app, you would geocode the address to get exact coordinates
+    const lat = defaultCenter.lat + (Math.random() - 0.5) * 0.2;
+    const lng = defaultCenter.lng + (Math.random() - 0.5) * 0.2;
+    
+    if (mapInstanceRef.current && !useEmbedMap) {
+      mapInstanceRef.current.setCenter({ lat, lng });
+      mapInstanceRef.current.setZoom(15);
+    } else if (useEmbedMap) {
+      setMapCenter({ lat, lng });
+      setMapZoom(15);
+    }
+  };
+
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current && !useEmbedMap) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      mapInstanceRef.current.setZoom(currentZoom + 1);
+    } else if (useEmbedMap) {
+      setMapZoom((prev) => Math.min(prev + 1, 20));
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current && !useEmbedMap) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      mapInstanceRef.current.setZoom(currentZoom - 1);
+    } else if (useEmbedMap) {
+      setMapZoom((prev) => Math.max(prev - 1, 1));
+    }
+  };
+
+  // Generate embed map URL
+  const getEmbedMapUrl = () => {
+    if (apiKey && apiKey !== "YOUR_API_KEY") {
+      return `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${mapCenter.lat},${mapCenter.lng}&zoom=${mapZoom}`;
+    }
+    // Fallback to a static map or OpenStreetMap
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${mapCenter.lng - 0.1},${mapCenter.lat - 0.1},${mapCenter.lng + 0.1},${mapCenter.lat + 0.1}&layer=mapnik&marker=${mapCenter.lat},${mapCenter.lng}`;
   };
 
   return (
@@ -327,52 +514,59 @@ export default function PropertiesPage() {
 
             {/* Google Map */}
             <div className="bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative">
-              <div className="w-full h-full">
-                {/* Google Maps iframe - Replace with your API key */}
+              {!mapLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading map...</p>
+                  </div>
+                </div>
+              )}
+              
+              {mapError && !useEmbedMap && (
+                <div className="absolute top-4 left-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 z-20 max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-yellow-800">Map API Key Required</p>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file for full map features.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {useEmbedMap ? (
                 <iframe
                   width="100%"
                   height="100%"
-                  style={{ border: 0 }}
+                  style={{ border: 0, minHeight: "600px" }}
                   loading="lazy"
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://www.google.com/maps/embed/v1/view?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&center=${mapCenter.lat},${mapCenter.lng}&zoom=12`}
+                  src={getEmbedMapUrl()}
                 />
-                {/* Map Controls Overlay */}
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      // Zoom in functionality
-                      const iframe = document.querySelector('iframe');
-                      if (iframe) {
-                        const currentSrc = iframe.getAttribute('src') || '';
-                        const zoomMatch = currentSrc.match(/zoom=(\d+)/);
-                        const currentZoom = zoomMatch ? parseInt(zoomMatch[1]) : 12;
-                        const newZoom = Math.min(currentZoom + 1, 20);
-                        iframe.setAttribute('src', currentSrc.replace(/zoom=\d+/, `zoom=${newZoom}`));
-                      }
-                    }}
-                    className="bg-white px-3 py-2 rounded-lg shadow-md hover:bg-gray-50 text-gray-700 font-bold"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Zoom out functionality
-                      const iframe = document.querySelector('iframe');
-                      if (iframe) {
-                        const currentSrc = iframe.getAttribute('src') || '';
-                        const zoomMatch = currentSrc.match(/zoom=(\d+)/);
-                        const currentZoom = zoomMatch ? parseInt(zoomMatch[1]) : 12;
-                        const newZoom = Math.max(currentZoom - 1, 1);
-                        iframe.setAttribute('src', currentSrc.replace(/zoom=\d+/, `zoom=${newZoom}`));
-                      }
-                    }}
-                    className="bg-white px-3 py-2 rounded-lg shadow-md hover:bg-gray-50 text-gray-700 font-bold"
-                  >
-                    −
-                  </button>
-                </div>
+              ) : (
+                <div ref={mapRef} className="w-full h-full" style={{ minHeight: "600px" }} />
+              )}
+              
+              {/* Map Controls Overlay */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+                <button
+                  onClick={handleZoomIn}
+                  className="bg-white px-3 py-2 rounded-lg shadow-md hover:bg-gray-50 text-gray-700 font-bold flex items-center justify-center"
+                  title="Zoom in"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleZoomOut}
+                  className="bg-white px-3 py-2 rounded-lg shadow-md hover:bg-gray-50 text-gray-700 font-bold flex items-center justify-center"
+                  title="Zoom out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
