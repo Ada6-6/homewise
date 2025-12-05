@@ -59,45 +59,46 @@ export default function PropertiesPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Load Google Maps API
-  useEffect(() => {
-    // If no API key, use embed map instead
-    if (!apiKey || apiKey === "YOUR_API_KEY") {
-      setUseEmbedMap(true);
-      setMapLoaded(true);
-      return;
+  // Filter properties - must be defined before use in useEffect
+  const filteredProperties = useMemo(() => {
+    let filtered = [...mockProperties];
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.address.toLowerCase().includes(query) ||
+          p.city.toLowerCase().includes(query) ||
+          p.state.toLowerCase().includes(query) ||
+          p.description?.toLowerCase().includes(query)
+      );
     }
 
-    if (!window.google && !document.querySelector('script[src*="maps.googleapis.com"]')) {
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      
-      // Set up callback
-      window.initMap = initializeMap;
-      
-      // Handle script load errors
-      script.onerror = () => {
-        setMapError("Failed to load Google Maps. Using alternative map view.");
-        setUseEmbedMap(true);
-        setMapLoaded(true);
-      };
-      
-      document.head.appendChild(script);
-    } else if (window.google && mapRef.current && !mapInstanceRef.current) {
-      initializeMap();
+    // Price filter
+    filtered = filtered.filter(
+      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    );
+
+    // Property type filter
+    if (propertyType !== "all") {
+      filtered = filtered.filter((p) => p.propertyType === propertyType);
     }
 
-    return () => {
-      if (markersRef.current.length > 0) {
-        markersRef.current.forEach((marker) => marker.setMap(null));
-        markersRef.current = [];
-      }
-    };
-  }, [apiKey]);
+    // Bedrooms filter
+    if (bedrooms !== "all") {
+      const beds = parseInt(bedrooms);
+      filtered = filtered.filter((p) => p.bedrooms === beds);
+    }
 
-  const initializeMap = () => {
+    return filtered;
+  }, [searchQuery, priceRange, propertyType, bedrooms]);
+
+  const propertyTypes = Array.from(new Set(mockProperties.map((p) => p.propertyType)));
+  const bedroomOptions = Array.from(new Set(mockProperties.map((p) => p.bedrooms))).sort();
+
+  // Initialize map function
+  const initializeMap = useRef(() => {
     if (!mapRef.current || !window.google) {
       setMapError("Google Maps API not available. Using alternative map view.");
       setUseEmbedMap(true);
@@ -136,7 +137,45 @@ export default function PropertiesPage() {
       setUseEmbedMap(true);
       setMapLoaded(true);
     }
-  };
+  }).current;
+
+  // Load Google Maps API
+  useEffect(() => {
+    // If no API key, use embed map instead
+    if (!apiKey || apiKey === "YOUR_API_KEY") {
+      setUseEmbedMap(true);
+      setMapLoaded(true);
+      return;
+    }
+
+    if (!window.google && !document.querySelector('script[src*="maps.googleapis.com"]')) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Set up callback
+      window.initMap = initializeMap;
+      
+      // Handle script load errors
+      script.onerror = () => {
+        setMapError("Failed to load Google Maps. Using alternative map view.");
+        setUseEmbedMap(true);
+        setMapLoaded(true);
+      };
+      
+      document.head.appendChild(script);
+    } else if (window.google && mapRef.current && !mapInstanceRef.current) {
+      initializeMap();
+    }
+
+    return () => {
+      if (markersRef.current.length > 0) {
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
+      }
+    };
+  }, [apiKey, initializeMap]);
 
   // Update markers when filtered properties change
   useEffect(() => {
@@ -186,44 +225,7 @@ export default function PropertiesPage() {
         console.error("Error adding marker:", error);
       }
     });
-  }, [filteredProperties, selectedProperty, useEmbedMap]);
-
-  const filteredProperties = useMemo(() => {
-    let filtered = [...mockProperties];
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.address.toLowerCase().includes(query) ||
-          p.city.toLowerCase().includes(query) ||
-          p.state.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query)
-      );
-    }
-
-    // Price filter
-    filtered = filtered.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
-    );
-
-    // Property type filter
-    if (propertyType !== "all") {
-      filtered = filtered.filter((p) => p.propertyType === propertyType);
-    }
-
-    // Bedrooms filter
-    if (bedrooms !== "all") {
-      const beds = parseInt(bedrooms);
-      filtered = filtered.filter((p) => p.bedrooms === beds);
-    }
-
-    return filtered;
-  }, [searchQuery, priceRange, propertyType, bedrooms]);
-
-  const propertyTypes = Array.from(new Set(mockProperties.map((p) => p.propertyType)));
-  const bedroomOptions = Array.from(new Set(mockProperties.map((p) => p.bedrooms))).sort();
+  }, [filteredProperties, selectedProperty, useEmbedMap, defaultCenter.lat, defaultCenter.lng]);
 
   const handlePropertyClick = (property: Property) => {
     setSelectedProperty(property);

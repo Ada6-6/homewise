@@ -20,6 +20,7 @@ import {
   Building2,
   Play,
   GraduationCap,
+  Search,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -108,12 +109,13 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/properties"
-                className={`font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 font-medium transition-all ${
                   isScrolled
-                    ? "text-gray-700 hover:text-gray-900"
-                    : "text-white hover:text-gray-200"
+                    ? "text-gray-700 hover:text-green"
+                    : "text-white hover:text-green-light"
                 }`}
               >
+                <Search className="h-4 w-4" />
                 Properties
               </Link>
               <Link
