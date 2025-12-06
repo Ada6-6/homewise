@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Heart,
@@ -21,12 +22,33 @@ import {
   Play,
   GraduationCap,
   Search,
+  LogOut,
 } from "lucide-react";
+import { isAuthenticated, getCurrentUser, logout } from "@/lib/auth";
 
 export default function HomePage() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{ username: string } | null>(null);
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push("/login");
+    } else {
+      setIsCheckingAuth(false);
+      const user = getCurrentUser();
+      setCurrentUser(user);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,6 +93,18 @@ export default function HomePage() {
       });
     };
   }, []);
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -160,26 +194,55 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="flex items-center space-x-3">
-              <Link
-                href="/login"
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isScrolled
-                    ? "text-gray-700 hover:text-gray-900"
-                    : "text-white hover:text-gray-200"
-                }`}
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isScrolled
-                    ? "bg-green text-white hover:bg-green-dark"
-                    : "bg-green text-white hover:bg-green-dark"
-                }`}
-              >
-                Sign Up
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                      isScrolled
+                        ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">{currentUser.username}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      isScrolled
+                        ? "text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50"
+                        : "text-white hover:text-gray-200 border border-white/30 hover:bg-white/10"
+                    }`}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isScrolled
+                        ? "text-gray-700 hover:text-gray-900"
+                        : "text-white hover:text-gray-200"
+                    }`}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isScrolled
+                        ? "bg-green text-white hover:bg-green-dark"
+                        : "bg-green text-white hover:bg-green-dark"
+                    }`}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>

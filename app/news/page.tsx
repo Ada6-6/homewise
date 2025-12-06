@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home as HomeIcon, ArrowRight, Calendar, TrendingUp, DollarSign, MapPin, Building2, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Home as HomeIcon, ArrowRight, Calendar, TrendingUp, DollarSign, MapPin, Building2, FileText, User, LogOut } from "lucide-react";
+import { getCurrentUser, logout, isAuthenticated } from "@/lib/auth";
 
 type NewsCategory = "all" | "housing-trends" | "economic-finance" | "local-market" | "construction" | "policies";
 
@@ -200,8 +202,22 @@ const categoryConfig: Record<NewsCategory, { label: string; icon: React.ElementT
 };
 
 export default function NewsPage() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NewsCategory>("all");
+  const [currentUser, setCurrentUser] = useState<{ username: string } | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push("/login");
+    } else {
+      setIsCheckingAuth(false);
+      const user = getCurrentUser();
+      setCurrentUser(user);
+    }
+  }, [router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -211,6 +227,23 @@ export default function NewsPage() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getDisplayNews = () => {
     if (activeCategory === "all") {
@@ -289,18 +322,39 @@ export default function NewsPage() {
               </Link>
             </div>
             <div className="flex items-center space-x-3">
-              <Link
-                href="/login"
-                className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 rounded-lg font-medium bg-green text-white hover:bg-green-dark transition-colors"
-              >
-                Sign Up
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">{currentUser.username}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 rounded-lg font-medium bg-green text-white hover:bg-green-dark transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>

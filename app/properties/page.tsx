@@ -16,9 +16,13 @@ import {
   ZoomIn,
   ZoomOut,
   AlertCircle,
+  User,
+  LogOut,
 } from "lucide-react";
 import { mockProperties } from "@/lib/mockData";
 import { Property } from "@/types";
+import { getCurrentUser, logout, isAuthenticated } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 declare global {
   interface Window {
@@ -28,6 +32,7 @@ declare global {
 }
 
 export default function PropertiesPage() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000000]);
@@ -38,6 +43,8 @@ export default function PropertiesPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [useEmbedMap, setUseEmbedMap] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ username: string } | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -50,6 +57,17 @@ export default function PropertiesPage() {
   // Get API key from environment variable
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push("/login");
+    } else {
+      setIsCheckingAuth(false);
+      const user = getCurrentUser();
+      setCurrentUser(user);
+    }
+  }, [router]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -58,6 +76,11 @@ export default function PropertiesPage() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   // Filter properties - must be defined before use in useEffect
   const filteredProperties = useMemo(() => {
@@ -269,6 +292,18 @@ export default function PropertiesPage() {
     return `https://www.openstreetmap.org/export/embed.html?bbox=${mapCenter.lng - 0.1},${mapCenter.lat - 0.1},${mapCenter.lng + 0.1},${mapCenter.lat + 0.1}&layer=mapnik&marker=${mapCenter.lat},${mapCenter.lng}`;
   };
 
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header/Navigation */}
@@ -326,18 +361,39 @@ export default function PropertiesPage() {
               </Link>
             </div>
             <div className="flex items-center space-x-3">
-              <Link
-                href="/login"
-                className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 rounded-lg font-medium bg-green text-white hover:bg-green-dark transition-colors"
-              >
-                Sign Up
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">{currentUser.username}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 rounded-lg font-medium bg-green text-white hover:bg-green-dark transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>

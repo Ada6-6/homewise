@@ -1,28 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Home as HomeIcon, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { login, isAuthenticated } from "@/lib/auth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/");
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // TODO: Implement actual login logic
-    // For now, just simulate a delay
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to agents dashboard after successful login
-      window.location.href = "/agents";
-    }, 1000);
+    // Validate credentials
+    if (login(username, password)) {
+      // Login successful
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/");
+      }, 500);
+    } else {
+      // Login failed
+      setTimeout(() => {
+        setIsLoading(false);
+        setError("Invalid username or password. Please try again.");
+      }, 500);
+    }
   };
 
   return (
@@ -52,23 +69,23 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green transition-colors"
-                  placeholder="you@example.com"
+                  placeholder="Enter your username"
                 />
               </div>
             </div>

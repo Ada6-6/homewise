@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -12,7 +12,10 @@ import {
   Menu,
   X,
   Home,
+  User,
+  LogOut,
 } from "lucide-react";
+import { getCurrentUser, logout } from "@/lib/auth";
 
 const navigation = [
   { name: "Dashboard", href: "/agents", icon: LayoutDashboard },
@@ -24,7 +27,19 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ username: string } | null>(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <>
@@ -87,7 +102,17 @@ export default function Sidebar() {
             );
           })}
         </nav>
-        <div className="border-t border-gray-200 p-3">
+        <div className="border-t border-gray-200 p-3 space-y-1">
+          {currentUser && (
+            <Link
+              href="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors mb-2"
+            >
+              <User className="mr-3 h-5 w-5" />
+              <span className="font-medium">{currentUser.username}</span>
+            </Link>
+          )}
           <Link
             href="/settings"
             onClick={() => setMobileMenuOpen(false)}
@@ -96,6 +121,18 @@ export default function Sidebar() {
             <Settings className="mr-3 h-5 w-5" />
             Settings
           </Link>
+          {currentUser && (
+            <button
+              onClick={() => {
+                handleLogout();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </>
